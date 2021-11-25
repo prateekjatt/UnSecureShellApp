@@ -27,8 +27,6 @@ public class shell extends Fragment {
     private String port;
     private String cwd="~";
     private Button exe;
-    private TextView h;
-    private TextView p;
     private TextView sa;
     private TextView oa;
     @Override
@@ -57,29 +55,27 @@ public class shell extends Fragment {
             hostname="-";
             port = "-";
         }
-        h = getActivity().findViewById(R.id.textView2);
-        p = getActivity().findViewById(R.id.textView3);
+        ((TextView) getActivity().findViewById(R.id.textView2)).setText("Hostname: "+hostname);
+        ((TextView) getActivity().findViewById(R.id.textView3)).setText("Port: "+port);
         sa = getActivity().findViewById(R.id.shellarea);
         oa = getActivity().findViewById(R.id.textView4);
-        h.setText("Hostname: "+hostname);
-        p.setText("Port: "+port);
         exe = getActivity().findViewById(R.id.button4);
         exe.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                sendCommands();
+                sendCommands(sa.getText().toString());
             }
         });
-        sendCommands();
+        if(!hostname.equalsIgnoreCase("-") && !port.equalsIgnoreCase("-"))
+            sendCommands("");
     }
 
-    private void sendCommands(){
+    private void sendCommands(String command){
         new Thread(new Runnable() {
             @Override
             public void run() {
 
                 try{
-                    command();
                     URL url = new URL(hostname+":"+port);
                     HttpURLConnection con = (HttpURLConnection) url.openConnection();
                     con.setDoInput(true);
@@ -90,7 +86,7 @@ public class shell extends Fragment {
 
                     OutputStream out = con.getOutputStream();
                     BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
-                    bw.write("cd \""+cwd+"\"\n"+sa.getText().toString()+"\npwd\n");
+                    bw.write("cd \""+cwd+"\"\n"+command+"\npwd\n");
                     bw.flush();
                     bw.close();
 
@@ -106,10 +102,14 @@ public class shell extends Fragment {
                         }
                     }
                     br.close();
+
+                    String oldcwd = cwd;
                     String finalRes = updateCWD(res.split("\n"));
                     getActivity().runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
+                            oa.append("\n"+oldcwd+">"+command+"\n");
                             oa.append(finalRes);
                         }
                     });
@@ -139,40 +139,5 @@ public class shell extends Fragment {
             res += (s[i]+"\n");
         }
         return res;
-    }
-
-    public void command() throws IOException {
-        URL url = new URL(hostname+":"+port);
-        HttpURLConnection con = (HttpURLConnection) url.openConnection();
-        con.setDoInput(true);
-        con.setDoOutput(true);
-        con.setConnectTimeout(10000);
-        con.setReadTimeout(10000);
-        con.setRequestMethod("POST");
-
-        OutputStream out = con.getOutputStream();
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(out,"UTF-8"));
-        bw.write("cd \""+cwd+"\"\n"+"pwd\n");
-        bw.flush();
-        InputStream in = con.getInputStream();
-        BufferedReader br = new BufferedReader(new InputStreamReader(in));
-        if(con.getResponseCode() == HttpURLConnection.HTTP_OK){
-            String line;
-            while((line = br.readLine()) != null)
-            {
-                if(line.startsWith("C:") || line.startsWith("c:")) {
-                    line = line.trim().concat("> ");
-                    line = line.concat(sa.getText().toString().trim());
-                    line = line.concat("\n");
-                    String finalLine = line;
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            oa.append(finalLine);
-                        }
-                    });
-                }
-            }
-        }
     }
 }

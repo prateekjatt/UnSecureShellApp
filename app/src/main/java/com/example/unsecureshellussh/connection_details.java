@@ -35,11 +35,12 @@ public class connection_details extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         save = getActivity().findViewById(R.id.button);
+        hostname = getActivity().findViewById(R.id.hostname);
+        port = getActivity().findViewById(R.id.port);
+
         save.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                hostname = getActivity().findViewById(R.id.hostname);
-                port = getActivity().findViewById(R.id.port);
                 Bundle b = new Bundle();
                 b.putString("hostname",hostname.getText().toString());
                 b.putString("port",port.getText().toString());
